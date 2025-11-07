@@ -55,12 +55,14 @@ export default function Courses() {
 
       {loading ? <Loader /> : (
         courses.length === 0 ? <div className="empty">Nenhum curso encontrado</div> : (
-          <ul>
+          <ul className="item-list">
             {courses.map(c => (
-                <li key={c.id || c._id} style={{ marginBottom: 8 }}>
+                <li key={c.id || c._id}>
                   <strong>{c.title || c.name}</strong>
-                  <button onClick={() => startEdit(c)} style={{ marginLeft: 8 }} className="icon"><FaEdit className="icon-sm"/> Editar</button>
-                  <button onClick={() => remove(c.id || c._id)} style={{ marginLeft: 6 }} className="icon"><FaTrash className="icon-sm"/> Excluir</button>
+                  <div>
+                    <button onClick={() => startEdit(c)} className="icon-btn"><FaEdit className="icon-sm"/> Editar</button>
+                    <button onClick={() => remove(c.id || c._id)} className="icon-btn danger"><FaTrash className="icon-sm"/> Excluir</button>
+                  </div>
                 </li>
               ))}
           </ul>

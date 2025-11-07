@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api'
 import Loader from '../components/Loader'
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
+import { displayClass } from '../utils'
 
 export default function Classes() {
   const [classes, setClasses] = useState<any[]>([])
@@ -62,12 +63,14 @@ export default function Classes() {
 
       {loading ? <Loader /> : (
         classes.length === 0 ? <div className="empty">Nenhuma turma encontrada</div> : (
-          <ul>
+          <ul className="item-list">
             {classes.map(t => (
-                <li key={t.id || t._id} style={{ marginBottom: 8 }}>
-                  <strong>{t.name}</strong> {t.courseId ? `(curso ${t.courseId})` : ''}
-                  <button onClick={() => startEdit(t)} style={{ marginLeft: 8 }} className="icon"><FaEdit className="icon-sm"/> Editar</button>
-                  <button onClick={() => remove(t.id || t._id)} style={{ marginLeft: 6 }} className="icon"><FaTrash className="icon-sm"/> Excluir</button>
+                <li key={t.id || t._id}>
+                  <strong>{displayClass(t)}</strong> {t.courseId ? `(curso ${courses.find(c => (c.id || c._id) === t.courseId)?.title})` : ''}
+                  <div>
+                    <button onClick={() => startEdit(t)} className="icon-btn"><FaEdit className="icon-sm"/> Editar</button>
+                    <button onClick={() => remove(t.id || t._id)} className="icon-btn danger"><FaTrash className="icon-sm"/> Excluir</button>
+                  </div>
                 </li>
               ))}
           </ul>
