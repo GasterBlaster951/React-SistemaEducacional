@@ -1,0 +1,159 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* UX helpers */
+.btn {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn:disabled { opacity: 0.6; cursor: not-allowed }
+
+.form-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px }
+input[type="text"], input[type="number"], select { padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px }
+
+.table { width: 100%; border-collapse: collapse }
+.table th, .table td { padding: 8px; border-bottom: 1px solid #eee }
+
+@keyframes spin { to { transform: rotate(360deg) } }
+
+.empty { color: #666; font-style: italic }
+
+/* ==========================
+   Tema Educacional
+   ========================== */
+:root{
+  --bg:#f6f8fb;
+  --card:#ffffff;
+  --muted:#6b7280;
+  --accent:#2563eb; /* azul educativo */
+  --accent-2:#7c3aed; /* roxo */
+  --success:#16a34a;
+  --danger:#dc2626;
+  --glass: rgba(255,255,255,0.6);
+  --radius:12px;
+  --container-padding:2rem;
+}
+
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, #eef2ff 0%, var(--bg) 60%);
+  color:#0f172a;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* container */
+#root{
+  max-width:1200px;
+  margin:24px auto;
+  padding:var(--container-padding);
+  text-align:left;
+}
+
+/* header */
+header.app-header{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-bottom:18px;
+}
+.brand{
+  display:flex;align-items:center;gap:12px;
+}
+.brand h1{font-size:1.4rem;margin:0;color:var(--accent-2)}
+.brand p{margin:0;color:var(--muted);font-size:0.9rem}
+
+/* nav */
+nav{
+  display:flex;gap:12px;padding:12px 0 18px;border-bottom:1px solid rgba(15,23,42,0.06);margin-bottom:18px;
+}
+nav a{color:var(--accent-2);text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:600}
+nav a:hover{background:rgba(124,58,237,0.08)}
+
+/* main card */
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.9), var(--card));
+  padding:20px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(16,24,40,0.06);margin-bottom:18px;
+}
+
+/* forms */
+.form-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+input,select,textarea{font-size:0.95rem;border:1px solid #e6eef8;padding:10px 12px;border-radius:10px;background:transparent;min-height:38px}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 4px rgba(37,99,235,0.08);border-color:var(--accent)}
+
+.btn{background:var(--accent);box-shadow:0 6px 14px rgba(37,99,235,0.12);padding:8px 12px;border-radius:10px}
+.btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(37,99,235,0.12);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--muted);border:none}
+
+.actions{display:flex;gap:8px;align-items:center}
+
+/* table */
+.table{width:100%;border-collapse:collapse;background:transparent}
+.table th{background:linear-gradient(180deg, rgba(250,250,255,0.9), rgba(245,247,255,0.9));text-align:left;padding:12px;border-bottom:1px solid rgba(15,23,42,0.06);font-weight:600;color:#0b1220}
+.table td{padding:12px;border-bottom:1px solid rgba(15,23,42,0.04)}
+.table tr:hover td{background:linear-gradient(90deg, rgba(37,99,235,0.02), transparent)}
+
+.empty{color:var(--muted);padding:12px}
+
+/* util blocks */
+.muted{color:var(--muted)}
+.success{color:var(--success)}
+.danger{color:var(--danger)}
+
+/* responsive */
+@media (max-width:800px){
+  .form-row{flex-direction:column;align-items:stretch}
+  nav{flex-wrap:wrap}
+}
+
+/* icons */
+.icon{display:inline-flex;align-items:center;justify-content:center;gap:6px;vertical-align:middle}
+.icon-sm{width:16px;height:16px}
+
+
