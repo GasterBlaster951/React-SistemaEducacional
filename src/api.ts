@@ -15,57 +15,113 @@ async function request(path: string, options: RequestInit = {}) {
   return res.json()
 }
 
+import type { Course, Class as ClassType, Student, Grade, Teacher } from './types'
+
+// helper to safely read fields from unknown input
+function getStr(data: unknown, key: string): string | undefined {
+  if (data && typeof data === 'object' && key in data) {
+    const v = (data as Record<string, unknown>)[key]
+    if (typeof v === 'string') return v
+    if (typeof v === 'number') return String(v)
+  }
+  return undefined
+}
+
+function getAny(data: unknown, key: string): unknown {
+  if (data && typeof data === 'object' && key in data) return (data as Record<string, unknown>)[key]
+  return undefined
+}
+
+function getIdFromNested(nested: unknown): string | undefined {
+  if (nested && typeof nested === 'object') {
+    const obj = nested as Record<string, unknown>
+    const id = obj['id'] ?? obj['_id']
+    if (typeof id === 'string') return id
+    if (typeof id === 'number') return String(id)
+  }
+  return undefined
+}
+
 // Courses
-export const getCourses = () => request('/courses')
-export const createCourse = (data: any) => request('/courses', { method: 'POST', body: JSON.stringify(data) })
-export const updateCourse = (id: string, data: any) => request(`/courses/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const getCourses = (): Promise<Course[]> => request('/courses') as Promise<Course[]>
+export const createCourse = (data: Partial<Course>): Promise<Course> => request('/courses', { method: 'POST', body: JSON.stringify(data) }) as Promise<Course>
+export const updateCourse = (id: string, data: Partial<Course>): Promise<Course> => request(`/courses/${id}`, { method: 'PUT', body: JSON.stringify(data) }) as Promise<Course>
 export const deleteCourse = (id: string) => request(`/courses/${id}`, { method: 'DELETE' })
 
 // Classes
-export const getClasses = () => request('/classes')
-// create/update class: map UI field `name` -> room, keep other known fields
-export const createClass = (data: any) => {
-  const payload = { room: data.name ?? data.room ?? null, semester: data.semester ?? data.semestre ?? null, courseId: data.courseId ?? null, teacherId: data.teacherId ?? null }
-  return request('/classes', { method: 'POST', body: JSON.stringify(payload) })
+export const getClasses = (): Promise<ClassType[]> => request('/classes') as Promise<ClassType[]>
+export const createClass = (data: unknown): Promise<ClassType> => {
+  const name = getStr(data, 'name')
+  const room = getStr(data, 'room')
+  const semester = getStr(data, 'semester') ?? getStr(data, 'semestre')
+  const courseId = getStr(data, 'courseId') ?? getStr(data, 'course')
+  const teacherId = getStr(data, 'teacherId')
+  const payload: Partial<ClassType> = { room: name ?? room ?? undefined, semester: semester ?? undefined, courseId: courseId ?? undefined, teacherId: teacherId ?? undefined }
+  return request('/classes', { method: 'POST', body: JSON.stringify(payload) }) as Promise<ClassType>
 }
-export const updateClass = (id: string, data: any) => {
-  const payload = { room: data.name ?? data.room ?? null, semester: data.semester ?? data.semestre ?? null, courseId: data.courseId ?? null, teacherId: data.teacherId ?? null }
-  return request(`/classes/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
+export const updateClass = (id: string, data: unknown): Promise<ClassType> => {
+  const name = getStr(data, 'name')
+  const room = getStr(data, 'room')
+  const semester = getStr(data, 'semester') ?? getStr(data, 'semestre')
+  const courseId = getStr(data, 'courseId') ?? getStr(data, 'course')
+  const teacherId = getStr(data, 'teacherId')
+  const payload: Partial<ClassType> = { room: name ?? room ?? undefined, semester: semester ?? undefined, courseId: courseId ?? undefined, teacherId: teacherId ?? undefined }
+  return request(`/classes/${id}`, { method: 'PUT', body: JSON.stringify(payload) }) as Promise<ClassType>
 }
 export const deleteClass = (id: string) => request(`/classes/${id}`, { method: 'DELETE' })
 
 // Students
-export const getStudents = () => request('/students')
-// create/update student: support `name` -> split to firstName/lastName, accept classId
-export const createStudent = (data: any) => {
-  let firstName = data.firstName || ''
-  let lastName = data.lastName || ''
-  if (!firstName && data.name) {
-    const parts = String(data.name).trim().split(/\s+/)
-    firstName = parts.shift() || ''
-    lastName = parts.join(' ') || ''
+export const getStudents = (): Promise<Student[]> => request('/students') as Promise<Student[]>
+export const getStudent = (id: string): Promise<Student> => request(`/students/${id}`) as Promise<Student>
+
+function buildStudentPayload(data: unknown): Partial<Student> {
+  const firstName = getStr(data, 'firstName') ?? getStr(data, 'first_name') ?? undefined
+  const lastName = getStr(data, 'lastName') ?? getStr(data, 'last_name') ?? undefined
+  let f = firstName
+  let l = lastName
+  if (!f) {
+    const name = getStr(data, 'name')
+    if (name) {
+      const parts = name.trim().split(/\s+/)
+      f = parts.shift() || ''
+      l = parts.join(' ') || ''
+    }
   }
-  const payload: any = { firstName, lastName, email: data.email ?? null, registeredAt: data.registeredAt ?? null, classId: data.classId ?? data.class ?? null }
-  return request('/students', { method: 'POST', body: JSON.stringify(payload) })
+  const email = getStr(data, 'email')
+  const registeredAt = getStr(data, 'registeredAt') ?? getStr(data, 'registered_at')
+  const classId = (() => {
+    const cid = getStr(data, 'classId') ?? getStr(data, 'class') ?? getStr(data, 'turma') ?? undefined
+    if (cid) return cid
+    // nested object?
+    const nested = getAny(data, 'class') ?? getAny(data, 'turma')
+    return getIdFromNested(nested)
+  })()
+  const payload: Partial<Student> = { firstName: f, lastName: l, email: email ?? undefined, registeredAt: registeredAt ?? undefined, classId: classId ?? undefined }
+  return payload
 }
-export const updateStudent = (id: string, data: any) => {
-  let firstName = data.firstName || ''
-  let lastName = data.lastName || ''
-  if (!firstName && data.name) {
-    const parts = String(data.name).trim().split(/\s+/)
-    firstName = parts.shift() || ''
-    lastName = parts.join(' ') || ''
-  }
-  const payload: any = { firstName, lastName, email: data.email ?? null, registeredAt: data.registeredAt ?? null, classId: data.classId ?? data.class ?? null }
-  return request(`/students/${id}`, { method: 'PUT', body: JSON.stringify(payload) })
+
+export const createStudent = (data: unknown): Promise<Student> => {
+  const payload = buildStudentPayload(data)
+  return request('/students', { method: 'POST', body: JSON.stringify(payload) }) as Promise<Student>
+}
+export const updateStudent = (id: string, data: unknown): Promise<Student> => {
+  const payload = buildStudentPayload(data)
+  return request(`/students/${id}`, { method: 'PUT', body: JSON.stringify(payload) }) as Promise<Student>
 }
 export const deleteStudent = (id: string) => request(`/students/${id}`, { method: 'DELETE' })
 
 // Grades
-export const getGrades = () => request('/grades')
-export const getGradesByClass = (classId: string | number) => request(`/grades?classId=${Number(classId)}`)
-export const updateGrade = (id: string | number, data: any) => request(`/grades/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-export const createGrade = (data: any) => request('/grades', { method: 'POST', body: JSON.stringify(data) })
+export const getGrades = (): Promise<Grade[]> => request('/grades') as Promise<Grade[]>
+export const getGradesByClass = (classId: string | number): Promise<Grade[]> => request(`/grades?classId=${Number(classId)}`) as Promise<Grade[]>
+export const updateGrade = (id: string | number, data: Partial<Grade>) => request(`/grades/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+export const createGrade = (data: Partial<Grade>) => request('/grades', { method: 'POST', body: JSON.stringify(data) })
+
+// Teachers (optional)
+export const getTeacher = (id: string): Promise<Teacher> => request(`/teachers/${id}`) as Promise<Teacher>
+export const getTeachers = (): Promise<Teacher[]> => request('/teachers') as Promise<Teacher[]>
+export const createTeacher = (data: Partial<Teacher>): Promise<Teacher> => request('/teachers', { method: 'POST', body: JSON.stringify(data) }) as Promise<Teacher>
+export const updateTeacher = (id: string, data: Partial<Teacher>): Promise<Teacher> => request(`/teachers/${id}`, { method: 'PUT', body: JSON.stringify(data) }) as Promise<Teacher>
+export const deleteTeacher = (id: string) => request(`/teachers/${id}`, { method: 'DELETE' })
 
 export default {
   getCourses,
@@ -77,6 +133,7 @@ export default {
   updateClass,
   deleteClass,
   getStudents,
+  getStudent,
   createStudent,
   updateStudent,
   deleteStudent,
@@ -84,4 +141,9 @@ export default {
   getGradesByClass,
   updateGrade,
   createGrade,
+  getTeacher,
+  getTeachers,
+  createTeacher,
+  updateTeacher,
+  deleteTeacher,
 }

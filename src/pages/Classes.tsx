@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react'
 import api from '../api'
 import Loader from '../components/Loader'
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa'
-import { displayClass } from '../utils'
+import { displayClass, getObjId } from '../utils'
+import type { Class as ClassType, Course } from '../types'
 
 export default function Classes() {
-  const [classes, setClasses] = useState<any[]>([])
-  const [courses, setCourses] = useState<any[]>([])
+  const [classes, setClasses] = useState<ClassType[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
   const [name, setName] = useState('')
   const [courseId, setCourseId] = useState<string | null>(null)
-  const [editing, setEditing] = useState<any | null>(null)
+  const [editing, setEditing] = useState<ClassType | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -26,7 +27,7 @@ export default function Classes() {
     try {
       setSaving(true)
       const payload = { name, courseId }
-      if (editing) await api.updateClass(editing.id ?? editing._id, payload)
+      if (editing) await api.updateClass(getObjId(editing) ?? '', payload)
       else await api.createClass(payload)
       setClasses(await api.getClasses())
       setName('')
@@ -46,7 +47,7 @@ export default function Classes() {
     finally { setLoading(false) }
   }
 
-  const startEdit = (t: any) => { setEditing(t); setName(t.name || ''); setCourseId(t.courseId || null) }
+  const startEdit = (t: ClassType) => { setEditing(t); setName(t.name || ''); setCourseId(t.courseId || null) }
 
   return (
     <div>
@@ -55,7 +56,7 @@ export default function Classes() {
         <input placeholder="Nome da turma" value={name} onChange={e => setName(e.target.value)} />
         <select value={courseId ?? ''} onChange={e => setCourseId(e.target.value || null)}>
           <option value="">-- Selecionar curso --</option>
-          {courses.map(c => <option key={c.id || c._id} value={c.id ?? c._id}>{c.title ?? c.name}</option>)}
+          {courses.map(c => <option key={getObjId(c)} value={getObjId(c)}>{c.title ?? c.name}</option>)}
         </select>
         <button className="btn" onClick={save} disabled={saving}>{editing ? <><FaEdit className="icon-sm"/> Salvar</> : <><FaPlus className="icon-sm"/> Criar</>}</button>
         {editing && <button onClick={() => { setEditing(null); setName(''); setCourseId(null) }}>Cancelar</button>}
@@ -65,11 +66,11 @@ export default function Classes() {
         classes.length === 0 ? <div className="empty">Nenhuma turma encontrada</div> : (
           <ul className="item-list">
             {classes.map(t => (
-                <li key={t.id || t._id}>
-                  <strong>{displayClass(t)}</strong> {t.courseId ? `(curso ${courses.find(c => (c.id || c._id) === t.courseId)?.title})` : ''}
+                <li key={getObjId(t)}>
+                  <strong>{displayClass(t)}</strong> {t.courseId ? `(curso ${courses.find(c => getObjId(c) === t.courseId)?.title ?? courses.find(c => getObjId(c) === t.courseId)?.name})` : ''}
                   <div>
                     <button onClick={() => startEdit(t)} className="icon-btn"><FaEdit className="icon-sm"/> Editar</button>
-                    <button onClick={() => remove(t.id || t._id)} className="icon-btn danger"><FaTrash className="icon-sm"/> Excluir</button>
+                    <button onClick={() => remove(getObjId(t) ?? '')} className="icon-btn danger"><FaTrash className="icon-sm"/> Excluir</button>
                   </div>
                 </li>
               ))}

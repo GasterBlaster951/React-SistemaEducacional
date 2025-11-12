@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import api from '../api'
 import Loader from '../components/Loader'
 import { FaPlus, FaEdit, FaTrash, FaSave } from 'react-icons/fa'
+import type { Course } from '../types'
+import { getObjId } from '../utils'
 
 export default function Courses() {
-  const [courses, setCourses] = useState<any[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
   const [title, setTitle] = useState('')
-  const [editing, setEditing] = useState<any | null>(null)
+  const [editing, setEditing] = useState<Course | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -20,7 +22,7 @@ export default function Courses() {
     try {
       setSaving(true)
       if (editing) {
-        await api.updateCourse(editing.id ?? editing._id, { title })
+        await api.updateCourse(getObjId(editing) ?? '', { title })
       } else {
         await api.createCourse({ title })
       }
@@ -42,7 +44,7 @@ export default function Courses() {
     finally { setLoading(false) }
   }
 
-  const startEdit = (c: any) => { setEditing(c); setTitle(c.title || '') }
+  const startEdit = (c: Course) => { setEditing(c); setTitle(c.title || c.name || '') }
 
   return (
     <div>
@@ -57,11 +59,11 @@ export default function Courses() {
         courses.length === 0 ? <div className="empty">Nenhum curso encontrado</div> : (
           <ul className="item-list">
             {courses.map(c => (
-                <li key={c.id || c._id}>
+                <li key={getObjId(c)}>
                   <strong>{c.title || c.name}</strong>
                   <div>
                     <button onClick={() => startEdit(c)} className="icon-btn"><FaEdit className="icon-sm"/> Editar</button>
-                    <button onClick={() => remove(c.id || c._id)} className="icon-btn danger"><FaTrash className="icon-sm"/> Excluir</button>
+                    <button onClick={() => remove(getObjId(c) ?? '')} className="icon-btn danger"><FaTrash className="icon-sm"/> Excluir</button>
                   </div>
                 </li>
               ))}
